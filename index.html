@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O&D Passenger Tool</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-60R6JKEZL7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-60R6JKEZL7');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -452,6 +461,17 @@ function runQuery() {
   const quarters = focusRows[0]?.quarters || DB.quarters.length;
 
   showResults({ airport, carrierName, carrierCode, isAll, total, local, conn, pctL, pctC, quarters, airportRows });
+
+  // GA4 custom event — fires on every successful query
+  // Visible in Analytics → Reports → Events as 'query_run'
+  if (typeof gtag === 'function') {
+    gtag('event', 'query_run', {
+      airport:      airport,
+      carrier_code: carrierCode,
+      carrier_name: carrierName,
+      is_all_carriers: isAll
+    });
+  }
 }
 
 function sum(rows, key) {
