@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O&D Passenger Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─── CONFIGURATION ─────────────────────────────────────────── */
+/* UPDATE THIS: raw GitHub URL to your data.json file            */
+/* e.g. https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/data.json */
+</style>
+<script>
+const DATA_URL  = 'data.json'; /* <-- UPDATE THIS to your GitHub Pages raw URL */
+const TOOL_NAME = 'O&D Passenger Tool';
+</script>
+<style>
+/* ─── DESIGN SYSTEM ─────────────────────────────────────────── */
+:root {
+  --ink:        #0f1117;
+  --ink-2:      #3a3d47;
+  --ink-3:      #7a7e8a;
+  --paper:      #f5f3ee;
+  --paper-2:    #eceae4;
+  --paper-3:    #e2dfd8;
+  --accent:     #1a3a5c;
+  --accent-2:   #2a5f9e;
+  --accent-lit: #d6e8f7;
+  --local-clr:  #1a3a5c;
+  --conn-clr:   #c0392b;
+  --local-lit:  #d6e8f7;
+  --conn-lit:   #fde8e6;
+  --radius:     4px;
+  --radius-lg:  8px;
+  --mono:       'DM Mono', monospace;
+  --serif:      'Libre Baskerville', Georgia, serif;
+  --sans:       'DM Sans', system-ui, sans-serif;
+  --shadow:     0 1px 3px rgba(15,17,23,.08), 0 4px 12px rgba(15,17,23,.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ─── APP SHELL ─────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+header {
+  background: var(--accent);
+  padding: 1.25rem 2rem;
+  display: flex; align-items: baseline; gap: 1rem;
+  flex-wrap: wrap;
+}
+header h1 {
+  font-family: var(--serif);
+  color: #fff;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  letter-spacing: -.01em;
+}
+#vintage-badge {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: rgba(255,255,255,.55);
+  letter-spacing: .04em;
+  border: 1px solid rgba(255,255,255,.2);
+  padding: .2rem .5rem;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* ─── MAIN LAYOUT ─────────────────────────────────────────── */
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 0;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  align-items: start;
+}
+
+/* ─── QUERY PANEL ─────────────────────────────────────────── */
+.query-panel {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 2rem;
+}
+.query-panel h2 {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--paper-2);
+}
+
+.field { margin-bottom: 1.25rem; }
+.field label {
+  display: block;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: .4rem;
+}
+.field-hint {
+  font-size: .75rem;
+  color: var(--ink-3);
+  margin-top: .3rem;
+}
+
+/* Combobox / autocomplete */
+.combo-wrap { position: relative; }
+.combo-input {
+  width: 100%;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: .875rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: .65rem .9rem;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s, background .15s;
+}
+.combo-input:focus {
+  border-color: var(--accent-2);
+  background: #fff;
+}
+.combo-input::placeholder {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  font-family: var(--sans);
+  font-size: .875rem;
+}
+
+.combo-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+.combo-dropdown.open { display: block; }
+.combo-option {
+  padding: .5rem .9rem;
+  font-size: .85rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--paper-2);
+  transition: background .1s;
+}
+.combo-option:last-child { border-bottom: none; }
+.combo-option:hover, .combo-option.active { background: var(--accent-lit); }
+.combo-option strong { color: var(--accent); font-family: var(--mono); font-size: .8rem; }
+.combo-option span { color: var(--ink-2); margin-left: .4rem; }
+
+/* Select */
+.sel {
+  width: 100%;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: .875rem;
+  padding: .65rem .9rem;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7e8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .9rem center;
+  padding-right: 2.5rem;
+  transition: border-color .15s;
+  cursor: pointer;
+}
+.sel:focus { border-color: var(--accent-2); background-color: #fff; }
+
+/* Submit button */
+#submit-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: .9rem;
+  font-weight: 500;
+  padding: .8rem 1rem;
+  cursor: pointer;
+  letter-spacing: .02em;
+  margin-top: .25rem;
+  transition: background .15s, opacity .15s;
+}
+#submit-btn:hover { background: var(--accent-2); }
+#submit-btn:disabled { opacity: .4; cursor: default; }
+#form-error {
+  font-size: .8rem;
+  color: var(--conn-clr);
+  margin-top: .5rem;
+  min-height: 1.2em;
+}
+
+/* ─── RESULTS PANEL ─────────────────────────────────────────── */
+.results-panel { padding-left: 2rem; }
+
+#results-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 300px;
+  color: var(--ink-3);
+  text-align: center;
+  gap: .5rem;
+}
+#results-placeholder .icon {
+  font-size: 2.5rem;
+  opacity: .3;
+  line-height: 1;
+}
+#results-placeholder p { font-size: .9rem; }
+
+#results { display: none; }
+#results.visible { display: block; }
+
+/* Result header */
+.result-header {
+  margin-bottom: 1.5rem;
+}
+.result-airport {
+  font-family: var(--mono);
+  font-size: 2.5rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.result-carrier {
+  font-size: 1rem;
+  color: var(--ink-2);
+  margin-top: .3rem;
+}
+.result-meta {
+  font-size: .75rem;
+  font-family: var(--mono);
+  color: var(--ink-3);
+  margin-top: .5rem;
+  letter-spacing: .03em;
+}
+
+/* Stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  box-shadow: var(--shadow);
+}
+.stat-card.local  { border-top: 3px solid var(--local-clr); }
+.stat-card.conn   { border-top: 3px solid var(--conn-clr); }
+.stat-card.total  { border-top: 3px solid var(--ink-3); }
+.stat-label {
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: .4rem;
+}
+.stat-value {
+  font-family: var(--mono);
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-pct {
+  font-size: .8rem;
+  color: var(--ink-3);
+  margin-top: .25rem;
+  font-family: var(--mono);
+}
+.stat-card.local .stat-value  { color: var(--local-clr); }
+.stat-card.conn  .stat-value  { color: var(--conn-clr); }
+
+/* Explanation block */
+.explainer {
+  background: var(--paper-2);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+  font-size: .82rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  border-left: 3px solid var(--paper-3);
+}
+.explainer strong { color: var(--ink); font-weight: 500; }
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.chart-card {
+  background: #fff;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.chart-title {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 1rem;
+}
+.chart-wrap { position: relative; height: 200px; }
+
+/* All-carriers table */
+#carrier-table-wrap { margin-bottom: 2rem; }
+.table-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: .75rem;
+}
+.table-title {
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+thead th {
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: right;
+  padding: .4rem .75rem;
+  border-bottom: 1px solid var(--paper-3);
+}
+thead th:first-child { text-align: left; }
+tbody tr {
+  border-bottom: 1px solid var(--paper-2);
+  transition: background .1s;
+  cursor: pointer;
+}
+tbody tr:hover { background: var(--accent-lit); }
+tbody tr.highlighted { background: var(--accent-lit); }
+tbody td {
+  padding: .55rem .75rem;
+  text-align: right;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: .8rem;
+}
+tbody td:first-child {
+  text-align: left;
+  font-family: var(--sans);
+  font-size: .85rem;
+  color: var(--ink);
+  font-weight: 400;
+}
+.pct-bar-cell { width: 80px; }
+.pct-bar-wrap { display: flex; align-items: center; gap: .4rem; }
+.pct-bar-bg {
+  flex: 1; height: 4px; background: var(--paper-3);
+  border-radius: 2px; overflow: hidden;
+}
+.pct-bar-fill { height: 100%; border-radius: 2px; background: var(--local-clr); }
+.pct-text { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); min-width: 32px; }
+
+/* Loading state */
+.loading-msg {
+  display: flex; align-items: center; gap: .6rem;
+  color: var(--ink-3); font-size: .85rem;
+  padding: .5rem 0;
+}
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--paper-3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  background: var(--paper-2);
+  border-top: 1px solid var(--paper-3);
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .5rem;
+}
+footer p {
+  font-size: .75rem;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  letter-spacing: .03em;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  main {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  .query-panel { position: static; }
+  .results-panel { padding-left: 0; padding-top: 1.5rem; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 540px) {
+  header { padding: 1rem; }
+  .stat-grid { grid-template-columns: 1fr; gap: .75rem; }
+  .stat-value { font-size: 1.6rem; }
+  footer { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── APP ──────────────────────────────────────────── -->
+<div id="app">
+  <header>
+    <h1 id="app-title"></h1>
+    <span id="vintage-badge">Loading data…</span>
+  </header>
+
+  <main>
+    <!-- Query panel -->
+    <aside class="query-panel">
+      <h2>Query</h2>
+
+      <div class="field">
+        <label for="airport-input">Airport (IATA code)</label>
+        <div class="combo-wrap">
+          <input
+            id="airport-input"
+            class="combo-input"
+            type="text"
+            placeholder="Type code or name (e.g. ATL)"
+            maxlength="3"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <div id="airport-dropdown" class="combo-dropdown" role="listbox"></div>
+        </div>
+        <div class="field-hint">3-letter IATA airport code</div>
+      </div>
+
+      <div class="field">
+        <label for="carrier-select">Ticketing carrier</label>
+        <select id="carrier-select" class="sel">
+          <option value="">— Loading carriers —</option>
+        </select>
+      </div>
+
+      <button id="submit-btn" onclick="runQuery()" disabled>Analyze</button>
+      <div id="form-error"></div>
+    </aside>
+
+    <!-- Results panel -->
+    <section class="results-panel">
+      <div id="results-placeholder">
+        <div class="icon">✈</div>
+        <p>Select an airport and carrier, then click Analyze.</p>
+      </div>
+
+      <div id="results">
+        <div class="result-header">
+          <div class="result-airport" id="r-airport"></div>
+          <div class="result-carrier" id="r-carrier"></div>
+          <div class="result-meta" id="r-meta"></div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card total">
+            <div class="stat-label">Avg daily passengers</div>
+            <div class="stat-value" id="r-total"></div>
+            <div class="stat-pct">all O&amp;D passengers</div>
+          </div>
+          <div class="stat-card local">
+            <div class="stat-label">Local</div>
+            <div class="stat-value" id="r-local"></div>
+            <div class="stat-pct" id="r-pct-local"></div>
+          </div>
+          <div class="stat-card conn">
+            <div class="stat-label">Connecting</div>
+            <div class="stat-value" id="r-conn"></div>
+            <div class="stat-pct" id="r-pct-conn"></div>
+          </div>
+        </div>
+
+        <div class="explainer" id="r-explainer"></div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title">Local vs. connecting split</div>
+            <div class="chart-wrap"><canvas id="donut-chart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title" id="bar-chart-title">Top carriers by avg daily passengers</div>
+            <div class="chart-wrap"><canvas id="bar-chart"></canvas></div>
+          </div>
+        </div>
+
+        <div id="carrier-table-wrap">
+          <div class="table-header">
+            <div class="table-title" id="table-title">All carriers at this airport</div>
+          </div>
+          <table id="carrier-table">
+            <thead>
+              <tr>
+                <th>Carrier</th>
+                <th>Avg daily</th>
+                <th>Local</th>
+                <th>Connecting</th>
+                <th class="pct-bar-cell">% local</th>
+              </tr>
+            </thead>
+            <tbody id="carrier-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p id="footer-vintage">Data: —</p>
+    <p>Source: BTS DB1B Coupon data · 10% sample expanded to estimated actuals</p>
+  </footer>
+</div>
+
+<script>
+/* ─── GLOBALS ─────────────────────────────────────────────── */
+let DB = null;          // parsed data.json
+let donutChart = null;
+let barChart   = null;
+
+/* ─── INIT ────────────────────────────────────────────────── */
+document.getElementById('app-title').textContent = TOOL_NAME;
+
+// Load data immediately — no gate
+loadData();
+
+/* ─── DATA LOADING ─────────────────────────────────────────── */
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DB = await res.json();
+
+    // Vintage badge
+    document.getElementById('vintage-badge').textContent = `Data: ${DB.vintage}`;
+    document.getElementById('footer-vintage').textContent = `Data: BTS DB1B · ${DB.vintage}`;
+
+    // Populate carrier dropdown
+    const sel = document.getElementById('carrier-select');
+    sel.innerHTML = '';
+    DB.carriers.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value   = c.code;
+      opt.textContent = c.display;
+      sel.appendChild(opt);
+    });
+
+    // Wire up airport autocomplete
+    initAirportCombo();
+
+    // Enable submit
+    document.getElementById('submit-btn').disabled = false;
+
+  } catch (err) {
+    document.getElementById('vintage-badge').textContent = 'Error loading data';
+    console.error('Failed to load data.json:', err);
+    alert(`Failed to load data.json.\n\nCheck that DATA_URL in index.html points to the correct GitHub raw URL.\n\nError: ${err.message}`);
+  }
+}
+
+/* ─── AIRPORT AUTOCOMPLETE ─────────────────────────────────── */
+function initAirportCombo() {
+  const input    = document.getElementById('airport-input');
+  const dropdown = document.getElementById('airport-dropdown');
+  let activeIdx  = -1;
+
+  function buildOptions(query) {
+    const q = query.toUpperCase().trim();
+    if (!q) { dropdown.classList.remove('open'); return; }
+    const matches = DB.airports.filter(a => a.startsWith(q)).slice(0, 10);
+    if (!matches.length) { dropdown.classList.remove('open'); return; }
+    dropdown.innerHTML = matches.map((a, i) =>
+      `<div class="combo-option" data-val="${a}" role="option">${a}</div>`
+    ).join('');
+    dropdown.classList.add('open');
+    activeIdx = -1;
+    dropdown.querySelectorAll('.combo-option').forEach(el => {
+      el.addEventListener('mousedown', ev => {
+        ev.preventDefault();
+        selectAirport(el.dataset.val);
+      });
+    });
+  }
+
+  function selectAirport(code) {
+    input.value = code;
+    dropdown.classList.remove('open');
+    activeIdx = -1;
+  }
+
+  input.addEventListener('input', () => buildOptions(input.value));
+  input.addEventListener('keydown', e => {
+    const opts = dropdown.querySelectorAll('.combo-option');
+    if (!opts.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, opts.length - 1);
+      opts.forEach((o, i) => o.classList.toggle('active', i === activeIdx));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      opts.forEach((o, i) => o.classList.toggle('active', i === activeIdx));
+    } else if (e.key === 'Enter') {
+      if (activeIdx >= 0) { e.preventDefault(); selectAirport(opts[activeIdx].dataset.val); }
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('open');
+    }
+  });
+  input.addEventListener('blur', () => setTimeout(() => dropdown.classList.remove('open'), 150));
+}
+
+/* ─── QUERY LOGIC ──────────────────────────────────────────── */
+function runQuery() {
+  const airport      = document.getElementById('airport-input').value.toUpperCase().trim();
+  const carrierCode  = document.getElementById('carrier-select').value;
+  const errEl        = document.getElementById('form-error');
+  errEl.textContent  = '';
+
+  if (!airport || airport.length !== 3) {
+    errEl.textContent = 'Please enter a valid 3-letter airport code.';
+    return;
+  }
+  if (!DB.airports.includes(airport)) {
+    errEl.textContent = `Airport "${airport}" not found in the dataset. Check the code and try again.`;
+    return;
+  }
+  if (!carrierCode) {
+    errEl.textContent = 'Please select a carrier.';
+    return;
+  }
+
+  // All rows for this airport
+  const airportRows = DB.rows.filter(r => r.airport === airport);
+  if (!airportRows.length) {
+    errEl.textContent = `No data found for airport "${airport}".`;
+    return;
+  }
+
+  // Aggregate per carrier (sum across all carriers or filter to one)
+  let focusRows, carrierName, isAll;
+  if (carrierCode === '__ALL__') {
+    // Sum all carriers
+    focusRows  = aggregateRows(airportRows);
+    carrierName = 'All Carriers';
+    isAll = true;
+  } else {
+    focusRows = airportRows.filter(r => r.carrier === carrierCode);
+    if (!focusRows.length) {
+      errEl.textContent = `No data for ${carrierCode} at ${airport}.`;
+      return;
+    }
+    carrierName = DB.carriers.find(c => c.code === carrierCode)?.name || carrierCode;
+    isAll = false;
+  }
+
+  // Totals for focused result
+  const total = sum(focusRows, 'total');
+  const local = sum(focusRows, 'local');
+  const conn  = sum(focusRows, 'connecting');
+  const pctL  = total > 0 ? Math.round(local / total * 1000) / 10 : 0;
+  const pctC  = total > 0 ? Math.round(conn  / total * 1000) / 10 : 0;
+  const quarters = focusRows[0]?.quarters || DB.quarters.length;
+
+  showResults({
+    airport, carrierName, carrierCode, isAll,
+    total, local, conn, pctL, pctC, quarters,
+    airportRows
+  });
+}
+
+function sum(rows, key) {
+  return Math.round(rows.reduce((acc, r) => acc + (r[key] || 0), 0) * 10) / 10;
+}
+
+// Aggregate multiple carrier rows into a single summary
+function aggregateRows(rows) {
+  // Already at airport level — just return the combined total
+  return [{ total: sum(rows, 'total'), local: sum(rows, 'local'), connecting: sum(rows, 'connecting'), quarters: rows[0]?.quarters }];
+}
+
+/* ─── RENDER RESULTS ───────────────────────────────────────── */
+function showResults({ airport, carrierName, carrierCode, isAll, total, local, conn, pctL, pctC, quarters, airportRows }) {
+  document.getElementById('results-placeholder').style.display = 'none';
+  const resultsEl = document.getElementById('results');
+  resultsEl.classList.add('visible');
+
+  // Header
+  document.getElementById('r-airport').textContent  = airport;
+  document.getElementById('r-carrier').textContent  = carrierName;
+  document.getElementById('r-meta').textContent = `${quarters} quarter${quarters !== 1 ? 's' : ''} of data · ${DB.vintage} · Avg daily O&D passengers`;
+
+  // Stat cards
+  document.getElementById('r-total').textContent = fmt(total);
+  document.getElementById('r-local').textContent = fmt(local);
+  document.getElementById('r-conn').textContent  = fmt(conn);
+  document.getElementById('r-pct-local').textContent = `${pctL}% of total`;
+  document.getElementById('r-pct-conn').textContent  = `${pctC}% of total`;
+
+  // Explainer
+  const explainer = buildExplainer(airport, carrierName, isAll, total, local, conn, pctL, pctC);
+  document.getElementById('r-explainer').innerHTML = explainer;
+
+  // Charts
+  renderDonut(local, conn, pctL, pctC);
+  renderBar(airport, carrierCode, airportRows);
+
+  // Carrier table
+  renderCarrierTable(airportRows, carrierCode);
+
+  // Scroll results into view on mobile
+  if (window.innerWidth < 900) {
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function buildExplainer(airport, carrier, isAll, total, local, conn, pctL, pctC) {
+  const who  = isAll ? `all carriers combined` : `<strong>${carrier}</strong>`;
+  const dom  = pctL >= pctC ? 'local' : 'connecting';
+  const tip  = pctL >= pctC
+    ? `Most passengers traveling on ${who} at ${airport} start or end their journey here.`
+    : `Most passengers traveling on ${who} at ${airport} are passing through — they connect to or from another city.`;
+  return `<strong>Local passengers</strong> are O&amp;D travelers whose trip originates or terminates at ${airport}. ` +
+         `<strong>Connecting passengers</strong> are travelers for whom ${airport} is a mid-trip stop. ` +
+         `Counts represent estimated average daily O&amp;D passengers (BTS 10% sample × 10, averaged over ${DB.vintage}). ${tip}`;
+}
+
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString();
+}
+
+/* ─── DONUT CHART ──────────────────────────────────────────── */
+function renderDonut(local, conn, pctL, pctC) {
+  const ctx = document.getElementById('donut-chart').getContext('2d');
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: [`Local (${pctL}%)`, `Connecting (${pctC}%)`],
+      datasets: [{
+        data: [local, conn],
+        backgroundColor: ['#1a3a5c', '#c0392b'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: "'DM Sans', sans-serif", size: 11 },
+            color: '#3a3d47',
+            padding: 16,
+            boxWidth: 12, boxHeight: 12
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${fmt(ctx.raw)} avg daily passengers`
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ─── BAR CHART ────────────────────────────────────────────── */
+function renderBar(airport, selectedCarrierCode, airportRows) {
+  // Group by carrier and sum total
+  const byCarrier = {};
+  airportRows.forEach(r => {
+    if (!byCarrier[r.carrier]) byCarrier[r.carrier] = { name: r.name, total: 0, local: 0, connecting: 0 };
+    byCarrier[r.carrier].total      += r.total;
+    byCarrier[r.carrier].local      += r.local;
+    byCarrier[r.carrier].connecting += r.connecting;
+  });
+
+  const sorted = Object.entries(byCarrier)
+    .map(([code, d]) => ({ code, ...d }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  const labels = sorted.map(d => d.code);
+  const totals = sorted.map(d => Math.round(d.total));
+  const colors = sorted.map(d => d.code === selectedCarrierCode ? '#1a3a5c' : '#b0bec5');
+
+  document.getElementById('bar-chart-title').textContent = `Top carriers at ${airport} by avg daily passengers`;
+
+  const ctx = document.getElementById('bar-chart').getContext('2d');
+  if (barChart) barChart.destroy();
+  barChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Avg daily pax',
+        data: totals,
+        backgroundColor: colors,
+        borderRadius: 3,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => {
+              const code = ctx[0].label;
+              return sorted.find(d => d.code === code)?.name || code;
+            },
+            label: ctx => ` ${fmt(ctx.raw)} avg daily passengers`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: "'DM Mono', monospace", size: 10 }, color: '#7a7e8a' }
+        },
+        y: {
+          grid: { color: '#eceae4' },
+          ticks: {
+            font: { family: "'DM Sans', sans-serif", size: 10 },
+            color: '#7a7e8a',
+            callback: v => v.toLocaleString()
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ─── CARRIER TABLE ────────────────────────────────────────── */
+function renderCarrierTable(airportRows, selectedCarrierCode) {
+  // Group by carrier
+  const byCarrier = {};
+  airportRows.forEach(r => {
+    if (!byCarrier[r.carrier]) byCarrier[r.carrier] = { name: r.name, total: 0, local: 0, connecting: 0 };
+    byCarrier[r.carrier].total      += r.total;
+    byCarrier[r.carrier].local      += r.local;
+    byCarrier[r.carrier].connecting += r.connecting;
+  });
+
+  const sorted = Object.entries(byCarrier)
+    .map(([code, d]) => ({ code, ...d }))
+    .sort((a, b) => b.total - a.total);
+
+  const tbody = document.getElementById('carrier-tbody');
+  tbody.innerHTML = '';
+
+  sorted.forEach(row => {
+    const pctL = row.total > 0 ? Math.round(row.local / row.total * 1000) / 10 : 0;
+    const tr = document.createElement('tr');
+    if (row.code === selectedCarrierCode) tr.classList.add('highlighted');
+    tr.innerHTML = `
+      <td>${row.name} <span style="font-family:var(--mono);font-size:.75rem;color:var(--ink-3)">(${row.code})</span></td>
+      <td>${fmt(row.total)}</td>
+      <td>${fmt(row.local)}</td>
+      <td>${fmt(row.connecting)}</td>
+      <td class="pct-bar-cell">
+        <div class="pct-bar-wrap">
+          <div class="pct-bar-bg"><div class="pct-bar-fill" style="width:${pctL}%"></div></div>
+          <span class="pct-text">${pctL}%</span>
+        </div>
+      </td>`;
+    tr.addEventListener('click', () => {
+      // Clicking a row re-runs the query with that carrier selected
+      document.getElementById('carrier-select').value = row.code;
+      runQuery();
+    });
+    tbody.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
