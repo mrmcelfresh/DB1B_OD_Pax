@@ -609,7 +609,9 @@ function renderCarrierTable(airportRows, selectedCode) {
     byCarrier[r.carrier].local      += r.local;
     byCarrier[r.carrier].connecting += r.connecting;
   });
-  const sorted = Object.entries(byCarrier).map(([c,d]) => ({ code:c, ...d })).sort((a,b) => b.total - a.total);
+  const sorted = Object.entries(byCarrier).map(([c,d]) => ({ code:c, ...d }))
+    .filter(row => row.total >= 1)
+    .sort((a,b) => b.total - a.total);
   const tbody = document.getElementById('carrier-tbody');
   tbody.innerHTML = '';
   sorted.forEach(row => {
