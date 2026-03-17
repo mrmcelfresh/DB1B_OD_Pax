@@ -8,17 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-/* ─── CONFIGURATION ─────────────────────────────────────────── */
-/* UPDATE THIS: raw GitHub URL to your data.json file            */
-/* e.g. https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/data.json */
-</style>
 <script>
-const DATA_URL  = 'data.json'; /* <-- UPDATE THIS to your GitHub Pages raw URL */
+const DATA_URL  = 'data.json'; /* <-- UPDATE to your GitHub Pages raw URL */
 const TOOL_NAME = 'O&D Passenger Tool';
 </script>
 <style>
-/* ─── DESIGN SYSTEM ─────────────────────────────────────────── */
 :root {
   --ink:        #0f1117;
   --ink-2:      #3a3d47;
@@ -31,8 +25,6 @@ const TOOL_NAME = 'O&D Passenger Tool';
   --accent-lit: #d6e8f7;
   --local-clr:  #1a3a5c;
   --conn-clr:   #c0392b;
-  --local-lit:  #d6e8f7;
-  --conn-lit:   #fde8e6;
   --radius:     4px;
   --radius-lg:  8px;
   --mono:       'DM Mono', monospace;
@@ -40,416 +32,124 @@ const TOOL_NAME = 'O&D Passenger Tool';
   --sans:       'DM Sans', system-ui, sans-serif;
   --shadow:     0 1px 3px rgba(15,17,23,.08), 0 4px 12px rgba(15,17,23,.06);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--paper); color: var(--ink); min-height: 100vh; font-size: 15px; line-height: 1.6; }
 
-body {
-  font-family: var(--sans);
-  background: var(--paper);
-  color: var(--ink);
-  min-height: 100vh;
-  font-size: 15px;
-  line-height: 1.6;
-}
+/* ── Header ── */
+header { background: var(--accent); padding: 1.25rem 2rem; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+header h1 { font-family: var(--serif); color: #fff; font-size: clamp(1.1rem,2.5vw,1.5rem); font-weight: 400; letter-spacing: -.01em; }
+#vintage-badge { font-family: var(--mono); font-size: .7rem; color: rgba(255,255,255,.55); letter-spacing: .04em; border: 1px solid rgba(255,255,255,.2); padding: .2rem .5rem; border-radius: 2px; white-space: nowrap; }
 
-/* ─── APP SHELL ─────────────────────────────────────────── */
+/* ── Layout ── */
+main { flex: 1; display: grid; grid-template-columns: 340px 1fr; gap: 0; max-width: 1200px; width: 100%; margin: 0 auto; padding: 2rem; align-items: start; }
 #app { display: flex; flex-direction: column; min-height: 100vh; }
 
-/* ─── HEADER ─────────────────────────────────────────────── */
-header {
-  background: var(--accent);
-  padding: 1.25rem 2rem;
-  display: flex; align-items: baseline; gap: 1rem;
-  flex-wrap: wrap;
-}
-header h1 {
-  font-family: var(--serif);
-  color: #fff;
-  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  font-weight: 400;
-  letter-spacing: -.01em;
-}
-#vintage-badge {
-  font-family: var(--mono);
-  font-size: .7rem;
-  color: rgba(255,255,255,.55);
-  letter-spacing: .04em;
-  border: 1px solid rgba(255,255,255,.2);
-  padding: .2rem .5rem;
-  border-radius: 2px;
-  white-space: nowrap;
-}
-
-/* ─── MAIN LAYOUT ─────────────────────────────────────────── */
-main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 0;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 2rem;
-  align-items: start;
-}
-
-/* ─── QUERY PANEL ─────────────────────────────────────────── */
-.query-panel {
-  background: #fff;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 2rem;
-}
-.query-panel h2 {
-  font-family: var(--serif);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 1.25rem;
-  padding-bottom: .75rem;
-  border-bottom: 1px solid var(--paper-2);
-}
-
+/* ── Query panel ── */
+.query-panel { background: #fff; border: 1px solid var(--paper-3); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow); position: sticky; top: 2rem; }
+.query-panel h2 { font-family: var(--serif); font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; padding-bottom: .75rem; border-bottom: 1px solid var(--paper-2); }
 .field { margin-bottom: 1.25rem; }
-.field label {
-  display: block;
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: .4rem;
-}
-.field-hint {
-  font-size: .75rem;
-  color: var(--ink-3);
-  margin-top: .3rem;
-}
+.field label { display: block; font-size: .75rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .4rem; }
+.field-hint { font-size: .75rem; color: var(--ink-3); margin-top: .3rem; }
 
-/* Combobox / autocomplete */
+/* Autocomplete */
 .combo-wrap { position: relative; }
-.combo-input {
-  width: 100%;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius);
-  font-family: var(--mono);
-  font-size: .875rem;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  padding: .65rem .9rem;
-  background: var(--paper);
-  color: var(--ink);
-  outline: none;
-  transition: border-color .15s, background .15s;
-}
-.combo-input:focus {
-  border-color: var(--accent-2);
-  background: #fff;
-}
-.combo-input::placeholder {
-  text-transform: none;
-  letter-spacing: 0;
-  color: var(--ink-3);
-  font-family: var(--sans);
-  font-size: .875rem;
-}
-
-.combo-dropdown {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-  background: #fff;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 100;
-  display: none;
-}
+.combo-input { width: 100%; border: 1px solid var(--paper-3); border-radius: var(--radius); font-family: var(--sans); font-size: .875rem; padding: .65rem .9rem; background: var(--paper); color: var(--ink); outline: none; transition: border-color .15s, background .15s; }
+.combo-input:focus { border-color: var(--accent-2); background: #fff; }
+.combo-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid var(--paper-3); border-radius: var(--radius); box-shadow: var(--shadow); max-height: 220px; overflow-y: auto; z-index: 100; display: none; }
 .combo-dropdown.open { display: block; }
-.combo-option {
-  padding: .5rem .9rem;
-  font-size: .85rem;
-  cursor: pointer;
-  border-bottom: 1px solid var(--paper-2);
-  transition: background .1s;
-}
+.combo-option { padding: .45rem .9rem; font-size: .82rem; cursor: pointer; border-bottom: 1px solid var(--paper-2); transition: background .1s; }
 .combo-option:last-child { border-bottom: none; }
 .combo-option:hover, .combo-option.active { background: var(--accent-lit); }
-.combo-option strong { color: var(--accent); font-family: var(--mono); font-size: .8rem; }
-.combo-option span { color: var(--ink-2); margin-left: .4rem; }
+.combo-code { font-family: var(--mono); font-size: .78rem; font-weight: 500; color: var(--accent); }
+.combo-name { color: var(--ink-2); margin-left: .4rem; font-size: .8rem; }
 
 /* Select */
-.sel {
-  width: 100%;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius);
-  font-family: var(--sans);
-  font-size: .875rem;
-  padding: .65rem .9rem;
-  background: var(--paper);
-  color: var(--ink);
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7e8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right .9rem center;
-  padding-right: 2.5rem;
-  transition: border-color .15s;
-  cursor: pointer;
-}
+.sel { width: 100%; border: 1px solid var(--paper-3); border-radius: var(--radius); font-family: var(--sans); font-size: .875rem; padding: .65rem .9rem; background: var(--paper); color: var(--ink); outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7e8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .9rem center; padding-right: 2.5rem; transition: border-color .15s; cursor: pointer; }
 .sel:focus { border-color: var(--accent-2); background-color: #fff; }
 
-/* Submit button */
-#submit-btn {
-  width: 100%;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius);
-  font-family: var(--sans);
-  font-size: .9rem;
-  font-weight: 500;
-  padding: .8rem 1rem;
-  cursor: pointer;
-  letter-spacing: .02em;
-  margin-top: .25rem;
-  transition: background .15s, opacity .15s;
-}
+#submit-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: var(--sans); font-size: .9rem; font-weight: 500; padding: .8rem 1rem; cursor: pointer; letter-spacing: .02em; margin-top: .25rem; transition: background .15s; }
 #submit-btn:hover { background: var(--accent-2); }
 #submit-btn:disabled { opacity: .4; cursor: default; }
-#form-error {
-  font-size: .8rem;
-  color: var(--conn-clr);
-  margin-top: .5rem;
-  min-height: 1.2em;
-}
+#form-error { font-size: .8rem; color: var(--conn-clr); margin-top: .5rem; min-height: 1.2em; }
 
-/* ─── RESULTS PANEL ─────────────────────────────────────────── */
+/* ── Home screen top-5 chart (Feature 4) ── */
+#home-panel { padding-top: 1rem; }
+#top-conn-section { background: #fff; border: 1px solid var(--paper-3); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; box-shadow: var(--shadow); }
+#top-conn-section h3 { font-size: .75rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem; }
+.home-bar-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
+.home-bar-code { font-family: var(--mono); font-size: .85rem; font-weight: 500; color: var(--accent); width: 36px; flex-shrink: 0; }
+.home-bar-track { flex: 1; height: 8px; background: var(--paper-2); border-radius: 4px; overflow: hidden; }
+.home-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .6s ease; }
+.home-bar-val { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); min-width: 60px; text-align: right; }
+#home-loading { color: var(--ink-3); font-size: .85rem; padding: .5rem 0; }
+
+/* ── Results panel ── */
 .results-panel { padding-left: 2rem; }
-
-#results-placeholder {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  min-height: 300px;
-  color: var(--ink-3);
-  text-align: center;
-  gap: .5rem;
-}
-#results-placeholder .icon {
-  font-size: 2.5rem;
-  opacity: .3;
-  line-height: 1;
-}
+#results-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: var(--ink-3); text-align: center; gap: .5rem; }
+#results-placeholder .icon { font-size: 2.5rem; opacity: .3; line-height: 1; }
 #results-placeholder p { font-size: .9rem; }
-
 #results { display: none; }
 #results.visible { display: block; }
 
 /* Result header */
-.result-header {
-  margin-bottom: 1.5rem;
-}
-.result-airport {
-  font-family: var(--mono);
-  font-size: 2.5rem;
-  font-weight: 500;
-  color: var(--accent);
-  letter-spacing: -.02em;
-  line-height: 1;
-}
-.result-carrier {
-  font-size: 1rem;
-  color: var(--ink-2);
-  margin-top: .3rem;
-}
-.result-meta {
-  font-size: .75rem;
-  font-family: var(--mono);
-  color: var(--ink-3);
-  margin-top: .5rem;
-  letter-spacing: .03em;
-}
+.result-header { margin-bottom: 1.5rem; }
+.result-airport { font-family: var(--mono); font-size: 2.5rem; font-weight: 500; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
+.result-airport-name { font-size: .9rem; color: var(--ink-3); font-family: var(--sans); margin-top: .15rem; }
+.result-carrier { font-size: 1rem; color: var(--ink-2); margin-top: .2rem; }
+.result-meta { font-size: .75rem; font-family: var(--mono); color: var(--ink-3); margin-top: .5rem; letter-spacing: .03em; }
 
 /* Stat cards */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.stat-card {
-  background: #fff;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1rem;
-  box-shadow: var(--shadow);
-}
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: #fff; border: 1px solid var(--paper-3); border-radius: var(--radius-lg); padding: 1.25rem 1rem; box-shadow: var(--shadow); }
 .stat-card.local  { border-top: 3px solid var(--local-clr); }
 .stat-card.conn   { border-top: 3px solid var(--conn-clr); }
 .stat-card.total  { border-top: 3px solid var(--ink-3); }
-.stat-label {
-  font-size: .7rem;
-  font-weight: 500;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: .4rem;
-}
-.stat-value {
-  font-family: var(--mono);
-  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1;
-}
-.stat-pct {
-  font-size: .8rem;
-  color: var(--ink-3);
-  margin-top: .25rem;
-  font-family: var(--mono);
-}
-.stat-card.local .stat-value  { color: var(--local-clr); }
-.stat-card.conn  .stat-value  { color: var(--conn-clr); }
+.stat-label { font-size: .7rem; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .4rem; }
+.stat-value { font-family: var(--mono); font-size: clamp(1.4rem,2.5vw,1.9rem); font-weight: 500; color: var(--ink); line-height: 1; }
+.stat-pct { font-size: .8rem; color: var(--ink-3); margin-top: .25rem; font-family: var(--mono); }
+.stat-card.local .stat-value { color: var(--local-clr); }
+.stat-card.conn  .stat-value { color: var(--conn-clr); }
 
-/* Explanation block */
-.explainer {
-  background: var(--paper-2);
-  border-radius: var(--radius);
-  padding: .9rem 1rem;
-  font-size: .82rem;
-  color: var(--ink-2);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  border-left: 3px solid var(--paper-3);
-}
+/* Explainer */
+.explainer { background: var(--paper-2); border-radius: var(--radius); padding: .9rem 1rem; font-size: .82rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 2rem; border-left: 3px solid var(--paper-3); }
 .explainer strong { color: var(--ink); font-weight: 500; }
+.explainer .disclaimer { display: block; font-style: italic; color: var(--ink-3); margin-bottom: .4rem; font-size: .8rem; }
 
 /* Charts */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-.chart-card {
-  background: #fff;
-  border: 1px solid var(--paper-3);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow);
-}
-.chart-title {
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 1rem;
-}
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+.chart-card { background: #fff; border: 1px solid var(--paper-3); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow); }
+.chart-title { font-size: .75rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem; }
 .chart-wrap { position: relative; height: 200px; }
 
-/* All-carriers table */
+/* Connecting O&D table (Feature 3) */
+#conn-od-section { margin-bottom: 2rem; }
+.section-title { font-size: .75rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .75rem; }
+
+/* Carrier table */
 #carrier-table-wrap { margin-bottom: 2rem; }
-.table-header {
-  display: flex; align-items: baseline; justify-content: space-between;
-  margin-bottom: .75rem;
-}
-.table-title {
-  font-size: .75rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: .85rem;
-}
-thead th {
-  font-size: .7rem;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  text-align: right;
-  padding: .4rem .75rem;
-  border-bottom: 1px solid var(--paper-3);
-}
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+thead th { font-size: .7rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); text-align: right; padding: .4rem .75rem; border-bottom: 1px solid var(--paper-3); }
 thead th:first-child { text-align: left; }
-tbody tr {
-  border-bottom: 1px solid var(--paper-2);
-  transition: background .1s;
-  cursor: pointer;
-}
+tbody tr { border-bottom: 1px solid var(--paper-2); transition: background .1s; cursor: pointer; }
 tbody tr:hover { background: var(--accent-lit); }
 tbody tr.highlighted { background: var(--accent-lit); }
-tbody td {
-  padding: .55rem .75rem;
-  text-align: right;
-  color: var(--ink-2);
-  font-family: var(--mono);
-  font-size: .8rem;
-}
-tbody td:first-child {
-  text-align: left;
-  font-family: var(--sans);
-  font-size: .85rem;
-  color: var(--ink);
-  font-weight: 400;
-}
+tbody td { padding: .55rem .75rem; text-align: right; color: var(--ink-2); font-family: var(--mono); font-size: .8rem; }
+tbody td:first-child { text-align: left; font-family: var(--sans); font-size: .85rem; color: var(--ink); }
 .pct-bar-cell { width: 80px; }
 .pct-bar-wrap { display: flex; align-items: center; gap: .4rem; }
-.pct-bar-bg {
-  flex: 1; height: 4px; background: var(--paper-3);
-  border-radius: 2px; overflow: hidden;
-}
+.pct-bar-bg { flex: 1; height: 4px; background: var(--paper-3); border-radius: 2px; overflow: hidden; }
 .pct-bar-fill { height: 100%; border-radius: 2px; background: var(--local-clr); }
 .pct-text { font-family: var(--mono); font-size: .75rem; color: var(--ink-3); min-width: 32px; }
 
-/* Loading state */
-.loading-msg {
-  display: flex; align-items: center; gap: .6rem;
-  color: var(--ink-3); font-size: .85rem;
-  padding: .5rem 0;
-}
-.spinner {
-  width: 16px; height: 16px;
-  border: 2px solid var(--paper-3);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  flex-shrink: 0;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* Footer */
+footer { background: var(--paper-2); border-top: 1px solid var(--paper-3); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+footer p { font-size: .75rem; color: var(--ink-3); font-family: var(--mono); letter-spacing: .03em; }
 
-/* ─── FOOTER ─────────────────────────────────────────────── */
-footer {
-  background: var(--paper-2);
-  border-top: 1px solid var(--paper-3);
-  padding: 1rem 2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: .5rem;
-}
-footer p {
-  font-size: .75rem;
-  color: var(--ink-3);
-  font-family: var(--mono);
-  letter-spacing: .03em;
-}
-
-/* ─── RESPONSIVE ─────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 900px) {
-  main {
-    grid-template-columns: 1fr;
-    padding: 1rem;
-  }
+  main { grid-template-columns: 1fr; padding: 1rem; }
   .query-panel { position: static; }
   .results-panel { padding-left: 0; padding-top: 1.5rem; }
-  .stat-grid { grid-template-columns: repeat(3, 1fr); }
   .charts-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
@@ -461,8 +161,6 @@ footer p {
 </style>
 </head>
 <body>
-
-<!-- ─── APP ──────────────────────────────────────────── -->
 <div id="app">
   <header>
     <h1 id="app-title"></h1>
@@ -473,45 +171,42 @@ footer p {
     <!-- Query panel -->
     <aside class="query-panel">
       <h2>Query</h2>
-
       <div class="field">
-        <label for="airport-input">Airport (IATA code)</label>
+        <label for="airport-input">Airport</label>
         <div class="combo-wrap">
-          <input
-            id="airport-input"
-            class="combo-input"
-            type="text"
-            placeholder="Type code or name (e.g. ATL)"
-            maxlength="3"
-            autocomplete="off"
-            spellcheck="false"
-          >
+          <input id="airport-input" class="combo-input" type="text"
+            placeholder="Code or city (e.g. ATL or Atlanta)"
+            autocomplete="off" spellcheck="false">
           <div id="airport-dropdown" class="combo-dropdown" role="listbox"></div>
         </div>
-        <div class="field-hint">3-letter IATA airport code</div>
+        <div class="field-hint">3-letter IATA code — exact matches shown first</div>
       </div>
-
       <div class="field">
         <label for="carrier-select">Ticketing carrier</label>
         <select id="carrier-select" class="sel">
           <option value="">— Loading carriers —</option>
         </select>
       </div>
-
       <button id="submit-btn" onclick="runQuery()" disabled>Analyze</button>
       <div id="form-error"></div>
     </aside>
 
-    <!-- Results panel -->
+    <!-- Results / home panel -->
     <section class="results-panel">
-      <div id="results-placeholder">
-        <div class="icon">✈</div>
-        <p>Select an airport and carrier, then click Analyze.</p>
+
+      <!-- Home screen: top-5 connecting airports (Feature 4) -->
+      <div id="home-panel">
+        <div id="top-conn-section">
+          <h3>Top connecting airports — all carriers</h3>
+          <div id="top-conn-bars"><div id="home-loading">Loading…</div></div>
+        </div>
       </div>
 
+      <!-- Results (hidden until query runs) -->
       <div id="results">
         <div class="result-header">
           <div class="result-airport" id="r-airport"></div>
+          <div class="result-airport-name" id="r-airport-name"></div>
           <div class="result-carrier" id="r-carrier"></div>
           <div class="result-meta" id="r-meta"></div>
         </div>
@@ -547,10 +242,24 @@ footer p {
           </div>
         </div>
 
+        <!-- Feature 3: Top 5 connecting O&Ds -->
+        <div id="conn-od-section">
+          <div class="section-title" id="conn-od-title">Top 5 connecting O&amp;Ds</div>
+          <table id="conn-od-table">
+            <thead>
+              <tr>
+                <th style="text-align:left">Origin</th>
+                <th style="text-align:left">Destination</th>
+                <th>Avg daily</th>
+              </tr>
+            </thead>
+            <tbody id="conn-od-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Carrier breakdown table -->
         <div id="carrier-table-wrap">
-          <div class="table-header">
-            <div class="table-title" id="table-title">All carriers at this airport</div>
-          </div>
+          <div class="section-title" id="table-title">All carriers at this airport</div>
           <table id="carrier-table">
             <thead>
               <tr>
@@ -575,72 +284,108 @@ footer p {
 </div>
 
 <script>
-/* ─── GLOBALS ─────────────────────────────────────────────── */
-let DB = null;          // parsed data.json
+/* ── Globals ── */
+let DB = null;
 let donutChart = null;
 let barChart   = null;
 
-/* ─── INIT ────────────────────────────────────────────────── */
+/* ── Init ── */
 document.getElementById('app-title').textContent = TOOL_NAME;
-
-// Load data immediately — no gate
 loadData();
 
-/* ─── DATA LOADING ─────────────────────────────────────────── */
+/* ── Load data ── */
 async function loadData() {
   try {
     const res = await fetch(DATA_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     DB = await res.json();
 
-    // Vintage badge
     document.getElementById('vintage-badge').textContent = `Data: ${DB.vintage}`;
     document.getElementById('footer-vintage').textContent = `Data: BTS DB1B · ${DB.vintage}`;
 
-    // Populate carrier dropdown
+    // Carrier dropdown — preserve lookup file order (Feature: sort order)
     const sel = document.getElementById('carrier-select');
     sel.innerHTML = '';
     DB.carriers.forEach(c => {
       const opt = document.createElement('option');
-      opt.value   = c.code;
+      opt.value = c.code;
       opt.textContent = c.display;
       sel.appendChild(opt);
     });
 
-    // Wire up airport autocomplete
     initAirportCombo();
-
-    // Enable submit
     document.getElementById('submit-btn').disabled = false;
+
+    // Feature 4: render home screen top-5 connecting airports
+    renderTopConnBars();
 
   } catch (err) {
     document.getElementById('vintage-badge').textContent = 'Error loading data';
+    document.getElementById('home-loading').textContent = 'Error loading data.';
     console.error('Failed to load data.json:', err);
-    alert(`Failed to load data.json.\n\nCheck that DATA_URL in index.html points to the correct GitHub raw URL.\n\nError: ${err.message}`);
+    alert(`Failed to load data.json.\n\nCheck that DATA_URL points to the correct GitHub raw URL.\n\nError: ${err.message}`);
   }
 }
 
-/* ─── AIRPORT AUTOCOMPLETE ─────────────────────────────────── */
+/* ── Feature 4: Top-5 connecting airports home screen bars ── */
+function renderTopConnBars() {
+  const container = document.getElementById('top-conn-bars');
+  const data = DB.top_connecting_airports;
+  if (!data || !data.length) { container.textContent = 'No data available.'; return; }
+
+  const max = data[0].avg_daily;
+  container.innerHTML = data.map(d => `
+    <div class="home-bar-row">
+      <span class="home-bar-code">${d.airport}</span>
+      <div class="home-bar-track">
+        <div class="home-bar-fill" style="width:${(d.avg_daily/max*100).toFixed(1)}%"></div>
+      </div>
+      <span class="home-bar-val">${Math.round(d.avg_daily).toLocaleString()}</span>
+    </div>`).join('');
+}
+
+/* ── Airport autocomplete (Feature 1) ── */
 function initAirportCombo() {
   const input    = document.getElementById('airport-input');
   const dropdown = document.getElementById('airport-dropdown');
   let activeIdx  = -1;
 
+  // Build search index: code and lowercase name
+  const airports = DB.airports; // [{code, name, display}]
+
+  function score(apt, q) {
+    const code = apt.code.toUpperCase();
+    const name = apt.name.toLowerCase();
+    const qu   = q.toUpperCase();
+    const ql   = q.toLowerCase();
+    if (code === qu) return 0;                    // exact code match — top
+    if (code.startsWith(qu)) return 1;            // code prefix
+    if (name.startsWith(ql)) return 2;            // name starts with
+    if (name.includes(ql)) return 3;              // name contains
+    return 99;
+  }
+
   function buildOptions(query) {
-    const q = query.toUpperCase().trim();
+    const q = query.trim();
     if (!q) { dropdown.classList.remove('open'); return; }
-    const matches = DB.airports.filter(a => a.startsWith(q)).slice(0, 10);
+    const matches = airports
+      .map(a => ({ ...a, _score: score(a, q) }))
+      .filter(a => a._score < 99)
+      .sort((a, b) => a._score - b._score || a.code.localeCompare(b.code))
+      .slice(0, 12);
+
     if (!matches.length) { dropdown.classList.remove('open'); return; }
-    dropdown.innerHTML = matches.map((a, i) =>
-      `<div class="combo-option" data-val="${a}" role="option">${a}</div>`
+
+    dropdown.innerHTML = matches.map(a =>
+      `<div class="combo-option" data-val="${a.code}" role="option">` +
+      `<span class="combo-code">${a.code}</span>` +
+      `<span class="combo-name">${a.name}</span></div>`
     ).join('');
     dropdown.classList.add('open');
     activeIdx = -1;
+
     dropdown.querySelectorAll('.combo-option').forEach(el => {
-      el.addEventListener('mousedown', ev => {
-        ev.preventDefault();
-        selectAirport(el.dataset.val);
-      });
+      el.addEventListener('mousedown', ev => { ev.preventDefault(); selectAirport(el.dataset.val); });
     });
   }
 
@@ -671,127 +416,89 @@ function initAirportCombo() {
   input.addEventListener('blur', () => setTimeout(() => dropdown.classList.remove('open'), 150));
 }
 
-/* ─── QUERY LOGIC ──────────────────────────────────────────── */
+/* ── Query logic ── */
 function runQuery() {
-  const airport      = document.getElementById('airport-input').value.toUpperCase().trim();
-  const carrierCode  = document.getElementById('carrier-select').value;
-  const errEl        = document.getElementById('form-error');
-  errEl.textContent  = '';
+  const airport     = document.getElementById('airport-input').value.toUpperCase().trim();
+  const carrierCode = document.getElementById('carrier-select').value;
+  const errEl       = document.getElementById('form-error');
+  errEl.textContent = '';
 
-  if (!airport || airport.length !== 3) {
-    errEl.textContent = 'Please enter a valid 3-letter airport code.';
-    return;
-  }
-  if (!DB.airports.includes(airport)) {
-    errEl.textContent = `Airport "${airport}" not found in the dataset. Check the code and try again.`;
-    return;
-  }
-  if (!carrierCode) {
-    errEl.textContent = 'Please select a carrier.';
-    return;
-  }
+  if (!airport || airport.length !== 3) { errEl.textContent = 'Please enter a valid 3-letter airport code.'; return; }
 
-  // All rows for this airport
+  const validCodes = DB.airports.map(a => a.code);
+  if (!validCodes.includes(airport)) { errEl.textContent = `Airport "${airport}" not found in the dataset.`; return; }
+  if (!carrierCode) { errEl.textContent = 'Please select a carrier.'; return; }
+
   const airportRows = DB.rows.filter(r => r.airport === airport);
-  if (!airportRows.length) {
-    errEl.textContent = `No data found for airport "${airport}".`;
-    return;
-  }
+  if (!airportRows.length) { errEl.textContent = `No data found for airport "${airport}".`; return; }
 
-  // Aggregate per carrier (sum across all carriers or filter to one)
   let focusRows, carrierName, isAll;
   if (carrierCode === '__ALL__') {
-    // Sum all carriers
-    focusRows  = aggregateRows(airportRows);
+    focusRows   = [{ total: sum(airportRows,'total'), local: sum(airportRows,'local'), connecting: sum(airportRows,'connecting'), quarters: airportRows[0]?.quarters }];
     carrierName = 'All Carriers';
     isAll = true;
   } else {
     focusRows = airportRows.filter(r => r.carrier === carrierCode);
-    if (!focusRows.length) {
-      errEl.textContent = `No data for ${carrierCode} at ${airport}.`;
-      return;
-    }
+    if (!focusRows.length) { errEl.textContent = `No data for ${carrierCode} at ${airport}.`; return; }
     carrierName = DB.carriers.find(c => c.code === carrierCode)?.name || carrierCode;
     isAll = false;
   }
 
-  // Totals for focused result
-  const total = sum(focusRows, 'total');
-  const local = sum(focusRows, 'local');
-  const conn  = sum(focusRows, 'connecting');
-  const pctL  = total > 0 ? Math.round(local / total * 1000) / 10 : 0;
-  const pctC  = total > 0 ? Math.round(conn  / total * 1000) / 10 : 0;
+  const total   = sum(focusRows, 'total');
+  const local   = sum(focusRows, 'local');
+  const conn    = sum(focusRows, 'connecting');
+  const pctL    = total > 0 ? Math.round(local / total * 1000) / 10 : 0;
+  const pctC    = total > 0 ? Math.round(conn  / total * 1000) / 10 : 0;
   const quarters = focusRows[0]?.quarters || DB.quarters.length;
 
-  showResults({
-    airport, carrierName, carrierCode, isAll,
-    total, local, conn, pctL, pctC, quarters,
-    airportRows
-  });
+  showResults({ airport, carrierName, carrierCode, isAll, total, local, conn, pctL, pctC, quarters, airportRows });
 }
 
 function sum(rows, key) {
   return Math.round(rows.reduce((acc, r) => acc + (r[key] || 0), 0) * 10) / 10;
 }
 
-// Aggregate multiple carrier rows into a single summary
-function aggregateRows(rows) {
-  // Already at airport level — just return the combined total
-  return [{ total: sum(rows, 'total'), local: sum(rows, 'local'), connecting: sum(rows, 'connecting'), quarters: rows[0]?.quarters }];
-}
-
-/* ─── RENDER RESULTS ───────────────────────────────────────── */
+/* ── Render results ── */
 function showResults({ airport, carrierName, carrierCode, isAll, total, local, conn, pctL, pctC, quarters, airportRows }) {
-  document.getElementById('results-placeholder').style.display = 'none';
+  // Hide home panel, show results
+  document.getElementById('home-panel').style.display = 'none';
   const resultsEl = document.getElementById('results');
   resultsEl.classList.add('visible');
 
-  // Header
-  document.getElementById('r-airport').textContent  = airport;
-  document.getElementById('r-carrier').textContent  = carrierName;
+  // Header — Feature 1: show airport name
+  const aptName = DB.airports.find(a => a.code === airport)?.name || '';
+  document.getElementById('r-airport').textContent      = airport;
+  document.getElementById('r-airport-name').textContent = aptName;
+  document.getElementById('r-carrier').textContent      = carrierName;
   document.getElementById('r-meta').textContent = `${quarters} quarter${quarters !== 1 ? 's' : ''} of data · ${DB.vintage} · Avg daily O&D passengers`;
 
   // Stat cards
-  document.getElementById('r-total').textContent = fmt(total);
-  document.getElementById('r-local').textContent = fmt(local);
-  document.getElementById('r-conn').textContent  = fmt(conn);
+  document.getElementById('r-total').textContent    = fmt(total);
+  document.getElementById('r-local').textContent    = fmt(local);
+  document.getElementById('r-conn').textContent     = fmt(conn);
   document.getElementById('r-pct-local').textContent = `${pctL}% of total`;
   document.getElementById('r-pct-conn').textContent  = `${pctC}% of total`;
 
-  // Explainer
-  const explainer = buildExplainer(airport, carrierName, isAll, total, local, conn, pctL, pctC);
-  document.getElementById('r-explainer').innerHTML = explainer;
-
-  // Charts
-  renderDonut(local, conn, pctL, pctC);
-  renderBar(airport, carrierCode, airportRows);
-
-  // Carrier table
-  renderCarrierTable(airportRows, carrierCode);
-
-  // Scroll results into view on mobile
-  if (window.innerWidth < 900) {
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-function buildExplainer(airport, carrier, isAll, total, local, conn, pctL, pctC) {
-  const who  = isAll ? `all carriers combined` : `<strong>${carrier}</strong>`;
-  const dom  = pctL >= pctC ? 'local' : 'connecting';
-  const tip  = pctL >= pctC
+  // Feature 5: disclaimer + explainer
+  const who = isAll ? 'all carriers combined' : `<strong>${carrierName}</strong>`;
+  const tip = pctL >= pctC
     ? `Most passengers traveling on ${who} at ${airport} start or end their journey here.`
     : `Most passengers traveling on ${who} at ${airport} are passing through — they connect to or from another city.`;
-  return `<strong>Local passengers</strong> are O&amp;D travelers whose trip originates or terminates at ${airport}. ` +
-         `<strong>Connecting passengers</strong> are travelers for whom ${airport} is a mid-trip stop. ` +
-         `Counts represent estimated average daily O&amp;D passengers (BTS 10% sample × 10, averaged over ${DB.vintage}). ${tip}`;
+  document.getElementById('r-explainer').innerHTML =
+    `<span class="disclaimer">All data shown based on domestic US O&amp;D itineraries only.</span>` +
+    `<strong>Local passengers</strong> are O&amp;D travelers whose trip originates or terminates at ${airport}. ` +
+    `<strong>Connecting passengers</strong> are travelers for whom ${airport} is a mid-trip stop. ` +
+    `Counts represent estimated average daily O&amp;D passengers (BTS 10% sample × 10, averaged over ${DB.vintage}). ${tip}`;
+
+  renderDonut(local, conn, pctL, pctC);
+  renderBar(airport, carrierCode, airportRows);
+  renderConnOdTable(airport, carrierCode, isAll);
+  renderCarrierTable(airportRows, carrierCode);
+
+  if (window.innerWidth < 900) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function fmt(n) {
-  if (n === undefined || n === null || isNaN(n)) return '—';
-  return Math.round(n).toLocaleString();
-}
-
-/* ─── DONUT CHART ──────────────────────────────────────────── */
+/* ── Donut chart ── */
 function renderDonut(local, conn, pctL, pctC) {
   const ctx = document.getElementById('donut-chart').getContext('2d');
   if (donutChart) donutChart.destroy();
@@ -799,107 +506,82 @@ function renderDonut(local, conn, pctL, pctC) {
     type: 'doughnut',
     data: {
       labels: [`Local (${pctL}%)`, `Connecting (${pctC}%)`],
-      datasets: [{
-        data: [local, conn],
-        backgroundColor: ['#1a3a5c', '#c0392b'],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
+      datasets: [{ data: [local, conn], backgroundColor: ['#1a3a5c','#c0392b'], borderWidth: 0, hoverOffset: 6 }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '65%',
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { family: "'DM Sans', sans-serif", size: 11 },
-            color: '#3a3d47',
-            padding: 16,
-            boxWidth: 12, boxHeight: 12
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${fmt(ctx.raw)} avg daily passengers`
-          }
-        }
+        legend: { position: 'bottom', labels: { font: { family: "'DM Sans', sans-serif", size: 11 }, color: '#3a3d47', padding: 16, boxWidth: 12, boxHeight: 12 } },
+        tooltip: { callbacks: { label: ctx => ` ${fmt(ctx.raw)} avg daily passengers` } }
       }
     }
   });
 }
 
-/* ─── BAR CHART ────────────────────────────────────────────── */
-function renderBar(airport, selectedCarrierCode, airportRows) {
-  // Group by carrier and sum total
+/* ── Bar chart ── */
+function renderBar(airport, selectedCode, airportRows) {
   const byCarrier = {};
   airportRows.forEach(r => {
-    if (!byCarrier[r.carrier]) byCarrier[r.carrier] = { name: r.name, total: 0, local: 0, connecting: 0 };
-    byCarrier[r.carrier].total      += r.total;
-    byCarrier[r.carrier].local      += r.local;
-    byCarrier[r.carrier].connecting += r.connecting;
+    if (!byCarrier[r.carrier]) byCarrier[r.carrier] = { name: r.name, total: 0 };
+    byCarrier[r.carrier].total += r.total;
   });
-
-  const sorted = Object.entries(byCarrier)
-    .map(([code, d]) => ({ code, ...d }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 10);
-
-  const labels = sorted.map(d => d.code);
-  const totals = sorted.map(d => Math.round(d.total));
-  const colors = sorted.map(d => d.code === selectedCarrierCode ? '#1a3a5c' : '#b0bec5');
+  const sorted = Object.entries(byCarrier).map(([c,d]) => ({ code:c, ...d })).sort((a,b) => b.total - a.total).slice(0,10);
 
   document.getElementById('bar-chart-title').textContent = `Top carriers at ${airport} by avg daily passengers`;
-
   const ctx = document.getElementById('bar-chart').getContext('2d');
   if (barChart) barChart.destroy();
   barChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels,
-      datasets: [{
-        label: 'Avg daily pax',
-        data: totals,
-        backgroundColor: colors,
-        borderRadius: 3,
-        borderSkipped: false
-      }]
+      labels: sorted.map(d => d.code),
+      datasets: [{ label: 'Avg daily pax', data: sorted.map(d => Math.round(d.total)), backgroundColor: sorted.map(d => d.code === selectedCode ? '#1a3a5c' : '#b0bec5'), borderRadius: 3, borderSkipped: false }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: ctx => {
-              const code = ctx[0].label;
-              return sorted.find(d => d.code === code)?.name || code;
-            },
-            label: ctx => ` ${fmt(ctx.raw)} avg daily passengers`
-          }
-        }
+        tooltip: { callbacks: { title: ctx => sorted.find(d => d.code === ctx[0].label)?.name || ctx[0].label, label: ctx => ` ${fmt(ctx.raw)} avg daily passengers` } }
       },
       scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { family: "'DM Mono', monospace", size: 10 }, color: '#7a7e8a' }
-        },
-        y: {
-          grid: { color: '#eceae4' },
-          ticks: {
-            font: { family: "'DM Sans', sans-serif", size: 10 },
-            color: '#7a7e8a',
-            callback: v => v.toLocaleString()
-          }
-        }
+        x: { grid: { display: false }, ticks: { font: { family: "'DM Mono', monospace", size: 10 }, color: '#7a7e8a' } },
+        y: { grid: { color: '#eceae4' }, ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: '#7a7e8a', callback: v => v.toLocaleString() } }
       }
     }
   });
 }
 
-/* ─── CARRIER TABLE ────────────────────────────────────────── */
-function renderCarrierTable(airportRows, selectedCarrierCode) {
-  // Group by carrier
+/* ── Feature 3: Connecting O&D table ── */
+function renderConnOdTable(airport, carrierCode, isAll) {
+  const tbody = document.getElementById('conn-od-tbody');
+  const title = document.getElementById('conn-od-title');
+  tbody.innerHTML = '';
+
+  const ods = DB.connecting_ods?.[airport]?.[carrierCode] || [];
+
+  if (!ods.length) {
+    title.textContent = 'Top 5 connecting O&Ds';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" style="text-align:center;color:var(--ink-3);font-family:var(--sans);font-size:.82rem;padding:.75rem">No connecting O&D data for this selection.</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  title.textContent = isAll
+    ? `Top ${ods.length} connecting O&Ds (all carriers combined)`
+    : `Top ${ods.length} connecting O&Ds`;
+
+  ods.forEach(od => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td style="font-family:var(--mono);font-size:.82rem">${od.o}</td>` +
+      `<td style="font-family:var(--mono);font-size:.82rem;text-align:left">${od.d}</td>` +
+      `<td>${fmt(od.n)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── Carrier table ── */
+function renderCarrierTable(airportRows, selectedCode) {
   const byCarrier = {};
   airportRows.forEach(r => {
     if (!byCarrier[r.carrier]) byCarrier[r.carrier] = { name: r.name, total: 0, local: 0, connecting: 0 };
@@ -907,36 +589,25 @@ function renderCarrierTable(airportRows, selectedCarrierCode) {
     byCarrier[r.carrier].local      += r.local;
     byCarrier[r.carrier].connecting += r.connecting;
   });
-
-  const sorted = Object.entries(byCarrier)
-    .map(([code, d]) => ({ code, ...d }))
-    .sort((a, b) => b.total - a.total);
-
+  const sorted = Object.entries(byCarrier).map(([c,d]) => ({ code:c, ...d })).sort((a,b) => b.total - a.total);
   const tbody = document.getElementById('carrier-tbody');
   tbody.innerHTML = '';
-
   sorted.forEach(row => {
     const pctL = row.total > 0 ? Math.round(row.local / row.total * 1000) / 10 : 0;
     const tr = document.createElement('tr');
-    if (row.code === selectedCarrierCode) tr.classList.add('highlighted');
-    tr.innerHTML = `
-      <td>${row.name} <span style="font-family:var(--mono);font-size:.75rem;color:var(--ink-3)">(${row.code})</span></td>
-      <td>${fmt(row.total)}</td>
-      <td>${fmt(row.local)}</td>
-      <td>${fmt(row.connecting)}</td>
-      <td class="pct-bar-cell">
-        <div class="pct-bar-wrap">
-          <div class="pct-bar-bg"><div class="pct-bar-fill" style="width:${pctL}%"></div></div>
-          <span class="pct-text">${pctL}%</span>
-        </div>
-      </td>`;
-    tr.addEventListener('click', () => {
-      // Clicking a row re-runs the query with that carrier selected
-      document.getElementById('carrier-select').value = row.code;
-      runQuery();
-    });
+    if (row.code === selectedCode) tr.classList.add('highlighted');
+    tr.innerHTML =
+      `<td>${row.name} <span style="font-family:var(--mono);font-size:.75rem;color:var(--ink-3)">(${row.code})</span></td>` +
+      `<td>${fmt(row.total)}</td><td>${fmt(row.local)}</td><td>${fmt(row.connecting)}</td>` +
+      `<td class="pct-bar-cell"><div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:${pctL}%"></div></div><span class="pct-text">${pctL}%</span></div></td>`;
+    tr.addEventListener('click', () => { document.getElementById('carrier-select').value = row.code; runQuery(); });
     tbody.appendChild(tr);
   });
+}
+
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString();
 }
 </script>
 </body>
