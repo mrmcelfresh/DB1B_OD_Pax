@@ -251,6 +251,20 @@ footer p { font-size: .75rem; color: var(--ink-3); font-family: var(--mono); let
           </div>
         </div>
 
+        <!-- Local O&D table (new feature) -->
+        <div id="local-od-section" style="margin-bottom:2rem">
+          <div class="section-title" id="local-od-title">Top local non-directional O&amp;Ds</div>
+          <table id="local-od-table">
+            <thead>
+              <tr>
+                <th style="text-align:left">Market</th>
+                <th>Avg daily</th>
+              </tr>
+            </thead>
+            <tbody id="local-od-tbody"></tbody>
+          </table>
+        </div>
+
         <!-- Feature 3: Top 5 connecting O&Ds -->
         <div id="conn-od-section">
           <div class="section-title" id="conn-od-title">Top 5 connecting O&amp;Ds</div>
@@ -512,6 +526,7 @@ function showResults({ airport, carrierName, carrierCode, isAll, total, local, c
 
   renderDonut(local, conn, pctL, pctC);
   renderBar(airport, carrierCode, airportRows);
+  renderLocalOdTable(airport, carrierCode, isAll);
   renderConnOdTable(airport, carrierCode, isAll);
   renderCarrierTable(airportRows, carrierCode);
 
@@ -567,6 +582,35 @@ function renderBar(airport, selectedCode, airportRows) {
         y: { grid: { color: '#eceae4' }, ticks: { font: { family: "'DM Sans', sans-serif", size: 10 }, color: '#7a7e8a', callback: v => v.toLocaleString() } }
       }
     }
+  });
+}
+
+/* ── Local O&D table (non-directional) ── */
+function renderLocalOdTable(airport, carrierCode, isAll) {
+  const tbody = document.getElementById('local-od-tbody');
+  const title = document.getElementById('local-od-title');
+  tbody.innerHTML = '';
+
+  const ods = DB.local_ods?.[airport]?.[carrierCode] || [];
+
+  if (!ods.length) {
+    title.textContent = 'Top local non-directional O&Ds';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="2" style="text-align:center;color:var(--ink-3);font-family:var(--sans);font-size:.82rem;padding:.75rem">No local O&D data for this selection.</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  title.textContent = isAll
+    ? `Top ${ods.length} local non-directional O&Ds (all carriers combined)`
+    : `Top ${ods.length} local non-directional O&Ds`;
+
+  ods.forEach(od => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td style="font-family:var(--mono);font-size:.82rem">${od.o} — ${od.d}</td>` +
+      `<td>${fmt(od.n)}</td>`;
+    tbody.appendChild(tr);
   });
 }
 
